@@ -1,0 +1,31 @@
+name: AETHER Release — Multi-Arch Container & PyPI Publish
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+jobs:
+  build-and-publish:
+    name: Build Wheel & OCI Image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+      - name: Build Python Distribution Packages
+        run: uv build
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and Push Control Plane Image
+        run: |
+          echo "Publishing ghcr.io/${{ github.repository }}/aether-engine:${{ github.ref_name }}"

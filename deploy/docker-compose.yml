@@ -1,0 +1,65 @@
+version: "3.9"
+
+services:
+  aether-api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: aether-control-plane
+    ports:
+      - "8000:8000"
+    environment:
+      AETHER_ENV: production
+      REDIS_URL: redis://aether-redis:6379/0
+      DATABASE_URL: postgresql+asyncpg://aether:aether_secret@aether-postgres:5432/aether_engine
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://aether-jaeger:4317
+    depends_on:
+      aether-redis:
+        condition: service_healthy
+      aether-postgres:
+        condition: service_healthy
+      aether-jaeger:
+        condition: service_started
+    restart: unless-stopped
+
+  aether-redis:
+    image: redis:7.2-alpine
+    container_name: aether-redis
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "1gb", "--maxmemory-policy", "allkeys-lru"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  aether-postgres:
+    image: pgvector/pgvector:pg16
+    container_name: aether-postgres
+    environment:
+      POSTGRES_USER: aether
+      POSTGRES_PASSWORD: aether_secret
+      POSTGRES_DB: aether_engine
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aether -d aether_engine"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  aether-jaeger:
+    image: jaegertracing/all-in-one:1.57
+    container_name: aether-jaeger
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686" # Jaeger WebUI
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+
+volumes:
+  pgdata:

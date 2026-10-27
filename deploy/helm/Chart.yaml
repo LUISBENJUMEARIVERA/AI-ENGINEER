@@ -1,0 +1,15 @@
+apiVersion: v2
+name: aether-engine
+description: Enterprise Helm Chart for the AETHER Autonomous Event-driven Task & Hybrid Evaluation Runtime
+type: application
+version: 0.4.2
+appVersion: "0.4.2"
+keywords:
+  - ai-control-plane
+  - dag-orchestration
+  - circuit-breaker
+  - opentelemetry
+  - pgvector
+maintainers:
+  - name: AETHER Systems Engineering
+    email: core@aether-engine.io
