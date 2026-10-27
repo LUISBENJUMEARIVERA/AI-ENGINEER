@@ -43,7 +43,7 @@ graph TD
 ## ⚡ Quickstart (Production Stack in 3 Commands)
 
 ```bash
-git clone https://github.com/TU_USUARIO/aether-engine.git && cd aether-engine
+git clone https://github.com/LUISBENJUMEARIVERA/AI-ENGINEER.git && cd AI-ENGINEER
 cp .env.example .env
 docker compose -f deploy/docker-compose.yml up -d
 ```

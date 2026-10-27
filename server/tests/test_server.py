@@ -14,6 +14,11 @@ async def test_server_endpoints_dag_recovery_and_guardrails() -> None:
     transport = ASGITransport(app=app)
 
     async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+        # 0. Cockpit Dashboard UI
+        ui_resp = await client.get("/")
+        assert ui_resp.status_code == 200
+        assert "AETHER ENGINE // CONTROL PLANE" in ui_resp.text
+
         # 1. Health check
         health = await client.get("/health")
         assert health.status_code == 200

@@ -8,7 +8,7 @@ from collections.abc import AsyncIterator
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
-from fastapi.responses import StreamingResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from aether_core.gateway import GatewayRequest, GatewayResponse, SmartGateway
@@ -24,6 +24,7 @@ from aether_core.memory import HybridSemanticMemory, SemanticSearchResult
 from aether_core.telemetry import AetherTracer
 from aether_evals import BenchmarkSuiteReport, HybridEvaluationRunner
 from aether_guardrails import GuardrailViolationError, StreamingGuardrailEngine
+from aether_server.ui import DASHBOARD_HTML
 
 
 class DAGRunPayload(BaseModel):
@@ -59,6 +60,10 @@ def create_app(state: ControlPlaneState | None = None) -> FastAPI:
         description="Autonomous Event-driven Task & Hybrid Evaluation Runtime",
     )
     app.state.cp = cp
+
+    @app.get("/", response_class=HTMLResponse)
+    async def cockpit_ui() -> HTMLResponse:
+        return HTMLResponse(content=DASHBOARD_HTML)
 
     @app.get("/health")
     async def health() -> dict[str, Any]:
